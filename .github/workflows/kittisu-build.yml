@@ -150,7 +150,9 @@ jobs:
             LLVM=1 LLVM_IAS=1 HOSTCFLAGS="-fcommon" Image 2>&1 | tee build.log
           test -f out/arch/arm64/boot/Image
           test -f out/vmlinux
-          test -f out/drivers/kernelsu/kernelsu.o
+          test -f out/drivers/kernelsu/built-in.a
+          test -f out/drivers/kernelsu/core/init.o
+          ls -l out/drivers/kernelsu/
           grep -q -- '-- KittiSU version code: 35111' build.log
           grep -q -- '-- KittiSU: using Manual Hook' build.log
           grep -q '^CONFIG_KSU=y$' out/.config
