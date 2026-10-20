@@ -35,6 +35,8 @@ jobs:
       ARCH: arm64
       CROSS_COMPILE: aarch64-linux-gnu-
       DEFCONFIG: k6877v1_64_k419_defconfig
+      # Vendor Makefiles use this to select the k419 SCP include path.
+      TARGET_PRODUCT: k6877v1_64_k419
 
     steps:
       - name: Check out kernel source
