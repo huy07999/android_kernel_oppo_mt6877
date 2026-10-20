@@ -28,6 +28,9 @@ jobs:
     name: Build Image with clang-r383902
     runs-on: ubuntu-22.04
     timeout-minutes: 180
+    defaults:
+      run:
+        working-directory: kernel-4.19
     env:
       ARCH: arm64
       CROSS_COMPILE: aarch64-linux-gnu-
@@ -37,7 +40,28 @@ jobs:
       - name: Check out kernel source
         uses: actions/checkout@v4
         with:
+          path: kernel-4.19
           fetch-depth: 1
+
+      - name: Check out matching OPPO vendor tree
+        uses: actions/checkout@v4
+        with:
+          repository: oppo-source/android_kernel_modules_oppo_mt6877
+          ref: 051951689da7a282b411a8b47293df1f9cc21ac1
+          path: vendor-src
+          fetch-depth: 1
+
+      - name: Prepare OPPO vendor tree
+        working-directory: .
+        run: |
+          set -euo pipefail
+          test -d vendor-src/vendor
+          mv vendor-src/vendor vendor
+          rm -rf vendor-src
+          test -f vendor/oplus/kernel/oplus_performance/sched_assist/Kconfig
+          test -f vendor/oplus/kernel/oplus_performance/klockopt/Kconfig
+          test -f kernel-4.19/kernel/sched_assist/Kconfig
+          test -f kernel-4.19/kernel/locking/klockopt/Kconfig
 
       - name: Free disk space
         run: |
@@ -124,6 +148,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kittisu-cph2251-${{ github.sha }}
-          path: artifacts/
+          path: kernel-4.19/artifacts/
           if-no-files-found: error
           retention-days: 14
