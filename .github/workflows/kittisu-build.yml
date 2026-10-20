@@ -63,6 +63,30 @@ jobs:
           test -f kernel-4.19/kernel/sched_assist/Kconfig
           test -f kernel-4.19/kernel/locking/klockopt/Kconfig
 
+      - name: Prepare legacy vendor mount
+        working-directory: .
+        run: |
+          set -euo pipefail
+          # drivers/base/kernelFwUpdate points at ../../../../vnd/vendor/...,
+          # one level above the workspace and through a legacy "vnd" mount.
+          # Provide that layout without modifying the kernel source tree.
+          mkdir -p ../vnd
+          ln -sfn "$GITHUB_WORKSPACE/vendor" ../vnd/vendor
+          test -f kernel-4.19/drivers/base/kernelFwUpdate/Kconfig
+
+      - name: Report unresolved vendor symlinks
+        working-directory: .
+        run: |
+          set -euo pipefail
+          unresolved=0
+          while IFS= read -r -d '' link; do
+            if [ ! -e "$link" ]; then
+              echo "::warning::Unresolved symlink ${link#kernel-4.19/} -> $(readlink "$link")"
+              unresolved=$((unresolved + 1))
+            fi
+          done < <(find kernel-4.19 -type l -print0)
+          echo "Unresolved vendor symlinks: $unresolved"
+
       - name: Free disk space
         run: |
           set -euo pipefail
